@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MEAF Consultants Ltd · Inventory Tool</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #f8fafc;
+      font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, sans-serif;
+      padding: 2rem 1.5rem;
+      color: #0f172a;
+    }
+    .app-container { max-width: 1400px; margin: 0 auto; }
+    
+    /* Header */
+    .search-header { text-align: center; margin-bottom: 2rem; }
+    .search-header h1 {
+      font-size: 2rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, #1e3a8a, #3b82f6);
+      background-clip: text;
+      -webkit-background-clip: text;
+      color: transparent;
+      letter-spacing: -0.3px;
+    }
+    .search-header p {
+      color: #475569;
+      margin-top: 0.25rem;
+      font-size: 0.9rem;
+    }
+    
+    /* Search box */
+    .search-wrapper {
+      background: white;
+      border-radius: 2rem;
+      padding: 0.3rem;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+      border: 1px solid #e2e8f0;
+      transition: all 0.2s;
+    }
+    .search-wrapper:focus-within {
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 3px rgba(59,130,246,0.2);
+    }
+    .search-input-area {
+      display: flex;
+      align-items: center;
+      background: #ffffff;
+      border-radius: 2rem;
+      padding: 0.2rem 0.2rem 0.2rem 1.5rem;
+    }
+    #searchInput {
+      flex: 1;
+      background: transparent;
+      border: none;
+      font-size: 1rem;
+      padding: 0.9rem 0;
+      color: #0f172a;
+      outline: none;
+      font-weight: 500;
+    }
+    #searchInput::placeholder {
+      color: #94a3b8;
+      font-weight: 400;
+    }
+    .search-status {
+      font-size: 0.75rem;
+      margin-top: 0.8rem;
+      color: #475569;
+      background: #f1f5f9;
+      display: inline-block;
+      padding: 0.2rem 1rem;
+      border-radius: 20px;
+    }
+    
+    /* Results header */
+    .results-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin: 1.5rem 0 1rem;
+      border-bottom: 2px solid #e2e8f0;
+      padding-bottom: 0.5rem;
+    }
+    .count-badge {
+      background: #e2e8f0;
+      padding: 0.2rem 0.8rem;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: #1e293b;
+    }
+    .hint {
+      font-size: 0.75rem;
+      color: #64748b;
+    }
+    
+    /* Card grid */
+    .results-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+      gap: 1.5rem;
+      margin-top: 1rem;
+    }
+    
+    /* Inventory card */
+    .inventory-card {
+      background: white;
+      border-radius: 1.25rem;
+      padding: 1.2rem;
+      border: 1px solid #e2e8f0;
+      transition: transform 0.2s, box-shadow 0.2s;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+      display: flex;
+      flex-direction: column;
+    }
+    .inventory-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 20px 25px -12px rgba(0, 0, 0, 0.1);
+      border-color: #cbd5e1;
+    }
+    
+    /* Image container */
+    .card-image {
+      width: 100%;
+      height: 170px;
+      background: #f8fafc;
+      border-radius: 0.75rem;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      border: 1px solid #eef2ff;
+    }
+    .card-image img {
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+    }
+    .placeholder-img {
+      width: 60px;
+      opacity: 0.5;
+    }
+    
+    /* Typography */
+    .item-name {
+      font-size: 1.25rem;
+      font-weight: 700;
+      margin: 0.5rem 0 0.25rem;
+      color: #0f172a;
+    }
+    .sku-mpn-row {
+      display: flex;
+      gap: 0.75rem;
+      margin: 0.75rem 0;
+      font-size: 0.75rem;
+      background: #f1f5f9;
+      padding: 0.5rem;
+      border-radius: 0.6rem;
+      color: #334155;
+      font-family: monospace;
+    }
+    .detail-row {
+      display: flex;
+      justify-content: space-between;
+      margin: 0.6rem 0;
+      font-size: 0.85rem;
+    }
+    .detail-label {
+      color: #475569;
+      font-weight: 500;
+    }
+    .price {
+      font-weight: 700;
+      color: #16a34a;
+      font-size: 1rem;
+    }
+    .stock-green { color: #15803d; font-weight: 600; }
+    .stock-red { color: #dc2626; font-weight: 600; }
+    
+    /* Gallery button */
+    .btn-gallery {
+      background: #3b82f6;
+      border: none;
+      color: white;
+      padding: 0.5rem;
+      border-radius: 2rem;
+      font-size: 0.8rem;
+      font-weight: 500;
+      cursor: pointer;
+      margin-top: auto;
+      width: 100%;
+      transition: 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.3rem;
+    }
+    .btn-gallery:hover {
+      background: #2563eb;
+      transform: scale(0.98);
+    }
+    
+    /* Modal Layout */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0,0,0,0.85);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+    }
+    .modal-content {
+      background: white;
+      width: 90%;
+      max-width: 1000px;
+      max-height: 90vh;
+      border-radius: 1.5rem;
+      padding: 1.5rem;
+      box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+    .gallery-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid #e2e8f0;
+      margin-bottom: 1rem;
+    }
+    .gallery-header h3 {
+      font-size: 1.2rem;
+      font-weight: 600;
+      color: #1e293b;
+    }
+    .close-modal {
+      font-size: 1.8rem;
+      font-weight: bold;
+      cursor: pointer;
+      color: #64748b;
+      transition: 0.1s;
+      line-height: 1;
+    }
+    .close-modal:hover { color: #0f172a; }
+
+    /* Gallery Layout: Main Image + Thumbnails */
+    .gallery-main-container {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      background: #f8fafc;
+      border-radius: 1rem;
+      margin-bottom: 1rem;
+      min-height: 300px;
+      border: 1px solid #e2e8f0;
+    }
+    #mainGalleryImage {
+      max-width: 100%;
+      max-height: 450px;
+      object-fit: contain;
+    }
+    
+    .thumbnails-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+      padding: 0.5rem 0;
+    }
+    .thumbnails-scroll {
+      overflow-x: auto;
+      scroll-behavior: smooth;
+      white-space: nowrap;
+      padding: 0.5rem;
+      margin: 0 2.5rem;
+      scrollbar-width: none;
+      -ms-overflow-style: none;
+    }
+    .thumbnails-scroll::-webkit-scrollbar {
+      display: none;
+    }
+    .thumbnails-grid {
+      display: inline-flex;
+      gap: 0.75rem;
+    }
+    .thumb-img {
+      width: 80px;
+      height: 80px;
+      object-fit: cover;
+      border-radius: 0.5rem;
+      cursor: pointer;
+      border: 2px solid transparent;
+      transition: 0.2s;
+      background: #f1f5f9;
+    }
+    .thumb-img:hover {
+      border-color: #94a3b8;
+    }
+    .thumb-img.active {
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 2px rgba(59,130,246,0.2);
+    }
+
+    .arrow {
+      position: absolute;
+      background: #3b82f6;
+      border: none;
+      color: white;
+      font-size: 1.2rem;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: 0.2s;
+      z-index: 10;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .arrow:hover { background: #2563eb; transform: scale(1.1); }
+    .arrow-left { left: 0; }
+    .arrow-right { right: 0; }
+    
+    .empty-state, .error-message {
+      background: white;
+      padding: 2.5rem;
+      text-align: center;
+      border-radius: 1.5rem;
+      border: 1px solid #e2e8f0;
+      color: #475569;
+    }
+    footer {
+      margin-top: 2.5rem;
+      text-align: center;
+      font-size: 0.7rem;
+      color: #94a3b8;
+      border-top: 1px solid #e2e8f0;
+      padding-top: 1.5rem;
+    }
+  </style>
+</head>
+<body>
+<div class="app-container">
+  <div class="search-header">
+    <h1>📦 MEAF Consultants Ltd · Inventory Tool</h1>
+    <p>instant search · smart matching · full image gallery</p>
+  </div>
+  <div class="search-wrapper">
+    <div class="search-input-area">
+      <span style="font-size:1.2rem;">🔍</span>
+      <input type="text" id="searchInput" placeholder="Search by SKU, MPN, name, manufacturer, or customer..." autocomplete="off">
+    </div>
+  </div>
+  <div class="search-status" id="searchStatus">⚡ ready — cached & instant</div>
+  <div class="results-meta">
+    <div class="count-badge" id="resultCount">📦 0 items</div>
+    <div class="hint">✨ top 10 matches · click “View all images” for gallery</div>
+  </div>
+  <div id="resultsContainer" class="results-grid"></div>
+  <footer>⚙️ powered by Zoho Inventory · full in‑memory cache · lazy image loading</footer>
+</div>
+
+<!-- Image Gallery Modal -->
+<div id="imageModal" class="modal">
+  <div class="modal-content">
+    <div class="gallery-header">
+      <h3 id="modalTitle">📸 Product Images</h3>
+      <span class="close-modal">&times;</span>
+    </div>
+    
+    <div class="gallery-main-container">
+      <img id="mainGalleryImage" src="" alt="Main product view">
+    </div>
+
+    <div class="thumbnails-wrapper">
+      <button class="arrow arrow-left" id="thumbScrollLeft">‹</button>
+      <div id="thumbScroll" class="thumbnails-scroll">
+        <div id="thumbInner" class="thumbnails-grid">
+          <!-- Thumbnails injected here -->
+        </div>
+      </div>
+      <button class="arrow arrow-right" id="thumbScrollRight">›</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  let debounceTimer;
+  const searchInput = document.getElementById('searchInput');
+  const resultsContainer = document.getElementById('resultsContainer');
+  const resultCountSpan = document.getElementById('resultCount');
+  const searchStatusSpan = document.getElementById('searchStatus');
+  const modal = document.getElementById('imageModal');
+  const mainImg = document.getElementById('mainGalleryImage');
+  const thumbInner = document.getElementById('thumbInner');
+  const thumbScroll = document.getElementById('thumbScroll');
+  const modalTitle = document.getElementById('modalTitle');
+
+  function escapeHtml(str) {
+    if (!str) return '';
+    return str.replace(/[&<>]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[m]));
+  }
+
+  function setMainImage(url, thumbElement) {
+    mainImg.src = url;
+    document.querySelectorAll('.thumb-img').forEach(t => t.classList.remove('active'));
+    if (thumbElement) thumbElement.classList.add('active');
+  }
+
+  async function fetchGallery(itemId, itemName) {
+    modalTitle.innerText = `📸 ${itemName}`;
+    thumbInner.innerHTML = '<div style="padding: 0.5rem;">Loading...</div>';
+    mainImg.src = 'data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'100\' height=\'100\' viewBox=\'0 0 24 24\' fill=\'none\' stroke=\'%2394a3b8\'%3E%3Crect x=\'2\' y=\'2\' width=\'20\' height=\'20\'/%3E%3C/svg%3E';
+    
+    try {
+      const res = await fetch(`/api/item-images/${itemId}`);
+      const images = await res.json();
+
+      if (images && images.length > 0) {
+        thumbInner.innerHTML = '';
+        images.forEach((img, index) => {
+          const imgTag = document.createElement('img');
+          imgTag.src = img.url;
+          imgTag.className = 'thumb-img' + (index === 0 ? ' active' : '');
+          imgTag.onclick = () => setMainImage(img.url, imgTag);
+          imgTag.onerror = () => { imgTag.style.display = 'none'; };
+          thumbInner.appendChild(imgTag);
+          
+          if (index === 0) mainImg.src = img.url;
+        });
+      } else {
+        thumbInner.innerHTML = '<div>No images found.</div>';
+      }
+    } catch(e) {
+      thumbInner.innerHTML = '<div>Error loading images.</div>';
+    }
+    modal.style.display = 'flex';
+  }
+
+  function renderItems(items, totalCount) {
+    if (!items.length) {
+      resultsContainer.innerHTML = `<div class="empty-state">🧩 No matching items found</div>`;
+      resultCountSpan.innerHTML = `📦 0 matches`;
+      return;
+    }
+    resultCountSpan.innerHTML = `📦 ${totalCount} match${totalCount !== 1 ? 'es' : ''}`;
+
+    const cardsHtml = items.map(item => {
+      const stockOk = item.stock > 0;
+      const placeholder = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8'%3E%3Crect x='2' y='2' width='20' height='20'/%3E%3C/svg%3E";
+      const imgUrl = item.main_image_url || placeholder;
+
+      // Dynamic customer rendering
+      let customerHtml = '';
+      if (item.customers && item.customers.length > 0) {
+        customerHtml = item.customers.map(c => `
+          <div class="detail-row">
+            <span class="detail-label">👤 ${escapeHtml(c.label)}</span>
+            <span style="font-weight:600; color:#c2410c;">${escapeHtml(c.value || '—')}</span>
+          </div>
+        `).join('');
+      } else {
+        customerHtml = `
+          <div class="detail-row">
+            <span class="detail-label">👤 Customer</span>
+            <span style="font-weight:600; color:#c2410c;">N/A</span>
+          </div>
+        `;
+      }
+
+      return `
+        <div class="inventory-card">
+          <div class="card-image">
+            <img src="${imgUrl}" alt="thumbnail" loading="lazy" onerror="this.src='${placeholder}';">
+          </div>
+          <div class="item-name">${escapeHtml(item.name)}</div>
+          <div class="sku-mpn-row">
+            <span>📦 SKU: ${escapeHtml(item.sku || '—')}</span>
+            <span>🔧 MPN: ${escapeHtml(item.mpn || '—')}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">🏭 Manufacturer</span>
+            <span style="font-weight:600; color:#1e3a8a;">${escapeHtml(item.manufacturer || '—')}</span>
+          </div>
+          ${customerHtml}
+          <div class="detail-row">
+            <span class="detail-label">💰 Unit Price</span>
+            <span class="price">$${item.rate.toFixed(2)}</span>
+          </div>
+          <div class="detail-row">
+            <span class="detail-label">📊 Stock status</span>
+            <span class="${stockOk ? 'stock-green' : 'stock-red'}">${stockOk ? `✓ In stock (${item.stock})` : '✗ Out of stock'}</span>
+          </div>
+          <button class="btn-gallery" onclick="fetchGallery('${item.item_id}', '${escapeHtml(item.name).replace(/'/g, "\\'")}')">
+            🖼️ View all images
+          </button>
+        </div>
+      `;
+    }).join('');
+
+    resultsContainer.innerHTML = cardsHtml;
+  }
+
+  async function performSearch(query) {
+    if (!query.trim()) {
+      resultsContainer.innerHTML = `<div class="empty-state">🔎 Type a SKU, MPN, or keyword — instant results</div>`;
+      resultCountSpan.innerHTML = `📦 0 items`;
+      searchStatusSpan.innerHTML = `✨ idle — start typing`;
+      return;
+    }
+    searchStatusSpan.innerHTML = `⏳ searching...`;
+    try {
+      const resp = await fetch(`/search?q=${encodeURIComponent(query)}`);
+      const data = await resp.json();
+      renderItems(data.items, data.count);
+      searchStatusSpan.innerHTML = `✅ ${data.count} result(s) for “${escapeHtml(query)}”`;
+    } catch(err) {
+      resultsContainer.innerHTML = `<div class="error-message">⚠️ Search failed — check backend</div>`;
+    }
+  }
+
+  searchInput.addEventListener('input', (e) => {
+    clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(() => performSearch(e.target.value), 200);
+  });
+
+  document.getElementById('thumbScrollLeft').onclick = () => thumbScroll.scrollBy({ left: -200, behavior: 'smooth' });
+  document.getElementById('thumbScrollRight').onclick = () => thumbScroll.scrollBy({ left: 200, behavior: 'smooth' });
+  document.querySelector('.close-modal').onclick = () => modal.style.display = 'none';
+  window.onclick = (e) => { if (e.target === modal) modal.style.display = 'none'; };
+
+  performSearch('');
+</script>
+</body>
+</html>

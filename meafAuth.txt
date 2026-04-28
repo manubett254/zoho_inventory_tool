@@ -1,0 +1,19 @@
+authcode: 1000.886c7a3cc4f43159e934aa5c39ae79f0.75399d52e5708721a237e4fbc0f2afc5
+client id = 1000.9HAW7XM2ZUL7MT9YGWKK1H37P5H82F
+client secret = a3c46f1a679f274cf7cc956ee90a4fb5938498180f
+refresh_token = 1000.7ef7d22e9eb986a7b3df24e422c544e3.5fb7ee8ea5a732bc8a7e4fa6f6227a5d
+intial accesstoek  = 1000.6a7010d036e3735bb28d8328af62c402.3d246a4c222a6879e6d4b3b5d1419338
+curl -X POST "https://accounts.zoho.com/oauth/v2/token" ^
+-d "grant_type=authorization_code" ^
+-d "client_id=1000.9HAW7XM2ZUL7MT9YGWKK1H37P5H82F" ^
+-d "client_secret=a3c46f1a679f274cf7cc956ee90a4fb5938498180f" ^
+-d "redirect_uri=http://localhost:5000/callback" ^
+-d "code=1000.886c7a3cc4f43159e934aa5c39ae79f0.75399d52e5708721a237e4fbc0f2afc5"
+
+
+curl --ssl-no-revoke -X POST "https://accounts.zoho.com/oauth/v2/token" ^
+-d "grant_type=authorization_code" ^
+-d "client_id=1000.9HAW7XM2ZUL7MT9YGWKK1H37P5H82F" ^
+-d "client_secret=a3c46f1a679f274cf7cc956ee90a4fb5938498180f" ^
+-d "redirect_uri=http://localhost:5000/callback" ^
+-d "code=1000.bd171ab06511ee102525ce5995f9a750.9350ef0380343695108a5d25b180ae7b"
